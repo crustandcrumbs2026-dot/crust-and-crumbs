@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crust & Crumbs - Bakery & Pastry Shop</title>
+<link rel="stylesheet" href="style_2.css">
+</head>
+<body>
+<!-- NAVIGATION HEADER -->
+<header>
+<nav>
+<div class="header-left">
+<button class="hamburger-btn" onclick="toggleHamburgerDrawer()">☰</button>
+<span class="logo" id="headerLogoLink">Crust & Crumbs</span>
+</div>
+<div class="nav-controls">
+<!-- Feature 4: Tanggalin/Itago ang Shopping Cart icon sa Admin/Staff View -->
+<button class="cart-icon-btn" id="cartBtn" style="display: none;">
+🛒<span class="cart-badge" id="cartBadge">0</span>
+</button>
+<div id="authNavContainer">
+<button class="signin-btn" onclick="openModal('signInModal')">Sign In</button>
+</div>
+</div>
+</nav>
+</header>
+
+<!-- HAMBURGER DRAWER MENU -->
+<div class="hamburger-drawer" id="hamburgerDrawer">
+<div class="drawer-header">
+<h3>Navigation Menu</h3>
+</div>
+<div class="drawer-menu-items" id="hamburgerMenuList"></div>
+</div>
+
+<!-- 1. CUSTOMER VIEW SECTION -->
+<main id="customerView" class="view-section active">
+<!-- Feature 5: Compact/Pinaliliit na Hero Section -->
+<section class="hero">
+<h1>Freshly Baked Everyday</h1>
+<p>Delicious handcrafted cakes, pastries, and artisanal breads.</p>
+<a href="#menu" class="btn">🍰 Explore Menu</a>
+</section>
+
+<div class="container" id="menu">
+<h2 class="section-title">Our Menu</h2>
+<div class="menu-toolbar">
+<div class="search-container">
+<input type="text" id="searchInput" class="search-input" placeholder="Search pastries, cakes, breads...">
+</div>
+
+</div>
+<div class="filter-buttons">
+<button class="filter-btn active" data-category="all">✨ All</button>
+<button class="filter-btn" data-category="cakes">🍰 Cakes</button>
+<button class="filter-btn" data-category="pastries">🥐 Pastries</button>
+<button class="filter-btn" data-category="breads">🍞 Breads</button>
+</div>
+<div class="products-grid" id="productsGrid"></div>
+</div>
+</main>
+
+<!-- 2. STAFF DASHBOARD VIEW SECTION -->
+<main id="staffView" class="view-section">
+<div class="container admin-shell">
+<div class="admin-topbar">
+<div>
+<h2 class="section-title admin-title">Staff Operations Dashboard</h2>
+
+</div>
+<div class="admin-top-actions">
+<button class="history-btn" onclick="openOrderHistoryModal()">📜 View Order History</button>
+<button class="end-day-btn" onclick="openEndStoreDayModal()">🌙 End Store Day</button>
+</div>
+</div>
+<div class="kpi-cards">
+<div class="kpi-card">
+<h4>Total Sales Today</h4>
+<div class="kpi-value" id="kpiTotalSales">0.00</div>
+</div>
+<div class="kpi-card" style="border-left-color: #9c27b0;">
+<h4>Payment Breakdown</h4>
+<div style="font-size: 0.85rem; margin-top: 0.3rem;">
+Cash: <strong id="kpiCashSales">0.00</strong><br>
+GCash: <strong id="kpiGcashSales">0.00</strong>
+</div>
+</div>
+<div class="kpi-card" style="border-left-color: #2a9d8f;">
+<h4>Active Orders</h4>
+<div class="kpi-value" id="kpiActiveOrders">0</div>
+</div>
+<div class="kpi-card" style="border-left-color: #e76f51;">
+<h4>Total Menu Items</h4>
+<div class="kpi-value" id="kpiTotalProducts">0</div>
+</div>
+</div>
+<div class="admin-tabs" role="tablist" aria-label="Admin sections">
+<button class="admin-tab-btn active" data-atab="overview" onclick="switchAdminTab('overview')">📊 Overview</button>
+<button class="admin-tab-btn" data-atab="orders" onclick="switchAdminTab('orders')">🧾 Orders <span class="admin-tab-count" id="adminOrdersCount">0</span></button>
+<button class="admin-tab-btn" data-atab="products" onclick="switchAdminTab('products')">🍞 Products &amp; Stock</button>
+<button class="admin-tab-btn" data-atab="custom" onclick="switchAdminTab('custom')">✨ Customizations</button>
+<button class="admin-tab-btn" data-atab="content" onclick="switchAdminTab('content')">⚙️ Content &amp; Settings</button>
+</div>
+<div class="admin-panels">
+<section class="admin-panel active" id="adminPanel-overview">
+<div class="admin-2col">
+<div class="dashboard-card">
+<h3>Top-Selling Pastries Today</h3>
+<div id="topSellingList" style="font-size: 0.88rem; line-height: 1.6;"></div>
+</div>
+<div class="dashboard-card admin-alert-card">
+<h3>⚠️ Low Stock Alerts</h3>
+<div id="lowStockList" style="font-size: 0.88rem; line-height: 1.6;"></div>
+
+</div>
+</div>
+</section>
+<section class="admin-panel" id="adminPanel-orders">
+<div class="dashboard-card">
+<div class="admin-card-head">
+<h3>Recent Orders Received</h3>
+<span class="admin-pill" id="adminActiveOrdersPill">0 active</span>
+</div>
+
+<div class="admin-table-wrap">
+<table class="data-table">
+<thead>
+<tr>
+<th>Order ID &amp; Date</th>
+<th>Items &amp; Customizations</th>
+<th>Total &amp; GCash Status</th>
+<th>Order Status</th>
+<th>ETA (Delivery)</th>
+<th>Kitchen Slip</th>
+<th>Rider Details</th>
+</tr>
+</thead>
+<tbody id="ordersTableBody"></tbody>
+</table>
+</div>
+</div>
+</section>
+<section class="admin-panel" id="adminPanel-products">
+<div class="admin-2col admin-2col-wide">
+<div class="dashboard-card">
+<h3>Add New Product</h3>
+<form id="addProductForm">
+<div class="form-group">
+<label for="prodName">Product Name</label>
+<input type="text" id="prodName" required placeholder="e.g. Cheese Ensaymada">
+</div>
+<div class="form-group">
+<label for="prodCategory">Category</label>
+<select id="prodCategory">
+<option value="pastries">Pastries</option>
+<option value="cakes">Cakes</option>
+<option value="breads">Breads</option>
+</select>
+</div>
+<div class="form-group">
+<label for="prodPrice">Price (P)</label>
+<input type="number" step="0.01" min="0.01" id="prodPrice" required placeholder="150.00">
+</div>
+<div class="form-group">
+<label for="prodStock">Initial Stock Quantity</label>
+<input type="number" id="prodStock" required value="20" min="0">
+</div>
+<div class="form-group">
+<label for="prodDesc">Description</label>
+<textarea id="prodDesc" rows="2" placeholder="Short description..."></textarea>
+</div>
+<div class="form-group">
+<label for="prodImage">Image URL</label>
+<input type="text" id="prodImage" required placeholder="https://... (paste any image link)" oninput="previewProdImage()">
+<img id="prodImagePreview" hidden alt="Image preview" style="width: 100%; max-height: 160px; object-fit: cover; border-radius: 8px; margin-top: 0.4rem; border: 1px solid #ddd;">
+</div>
+<button type="submit" class="form-btn">Add Product to Menu</button>
+</form>
+</div>
+<div class="dashboard-card">
+<div class="admin-card-head">
+<h3>Manage Inventory &amp; Stock</h3>
+</div>
+
+<div class="admin-table-wrap">
+<table class="data-table">
+<thead>
+<tr>
+<th>Item</th>
+<th>Category</th>
+<th>Price</th>
+<th>Stock</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="staffProductTable"></tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section class="admin-panel" id="adminPanel-custom">
+<div class="dashboard-card">
+<div class="admin-card-head">
+<h3>Manage Customization Options</h3>
+</div>
+<form id="addCustomOptionForm" style="margin-bottom: 1.2rem;">
+<div class="form-group">
+<label>Option Category</label>
+<select id="customOptCategory" required>
+<option value="syrups">Syrups &amp; Drizzles</option>
+<option value="fruits">Fresh Fruits</option>
+<option value="icecream">Ice Cream Flavors</option>
+<option value="nuts">Nuts Choices</option>
+<option value="crunchies">Crunchy Toppings</option>
+</select>
+</div>
+<div class="form-group">
+<label>Option / Flavor Name</label>
+<input type="text" id="customOptName" required placeholder="e.g. Pistachio / Matcha">
+</div>
+<div class="form-group">
+<label>Extra Price (P)</label>
+<input type="number" step="0.01" id="customOptPrice" required placeholder="15.00">
+</div>
+<button type="submit" class="form-btn" style="background-color: var(--primary-color);">Add Custom Option</button>
+</form>
+<div style="overflow-x: auto; max-height: 300px; overflow-y: auto;">
+<table class="data-table">
+<thead>
+<tr>
+<th>Category</th>
+<th>Option Name</th>
+<th>Price</th>
+<th>Available / Not Available</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="customOptionsTableBody"></tbody>
+</table>
+</div>
+</div>
+</section>
+<section class="admin-panel" id="adminPanel-content">
+<div class="admin-2col">
+<div class="dashboard-card" style="border-left: 4px solid var(--primary-color);">
+<h3>Edit About Us (Our Story)</h3>
+<form id="updateAboutStoryForm" onsubmit="handleSaveAboutStory(event)">
+<div class="form-group">
+<label>Story Title</label>
+<input type="text" id="staffEditAboutTitle" value="Our Story" required>
+</div>
+<div class="form-group">
+<label>Subtitle / Tagline</label>
+<input type="text" id="staffEditAboutSub" value="Baked by hand, since 2026" required>
+</div>
+<div class="form-group">
+<label>Story Content / Paragraph</label>
+<textarea id="staffEditAboutContent" rows="4" required>Crust &amp; Crumbs started as a home kitchen on Dimasalang Street. Today, our small team still laminates every croissant by hand and bakes in batches so everything reaches you fresh.</textarea>
+</div>
+<button type="submit" class="form-btn" style="background-color: var(--primary-color);">Save About Us Changes</button>
+</form>
+</div>
+<div class="dashboard-card" style="border-left: 4px solid var(--primary-color);">
+<h3>Edit Contact Us Information</h3>
+<form id="updateContactInfoForm" onsubmit="handleSaveContactInfo(event)">
+<div class="form-group">
+<label>Location / Address</label>
+<input type="text" id="staffEditLocation" required>
+</div>
+<div class="form-group">
+<label>Phone / Mobile</label>
+<input type="text" id="staffEditPhone" required>
+</div>
+<div class="form-group">
+<label>Email Address</label>
+<input type="email" id="staffEditEmail" required>
+</div>
+<div class="form-group">
+<label>Store Hours</label>
+<input type="text" id="staffEditHours" required>
+</div>
+<button type="submit" class="form-btn" style="background-color: var(--primary-color);">Save Contact Info Changes</button>
+</form>
+</div>
+<div class="dashboard-card" style="border-left: 4px solid #007dfe;">
+<h3>💙 Store GCash Settings</h3>
+<form id="updateGcashForm" onsubmit="handleSaveGcashSettings(event)">
+<div class="form-group">
+<label>GCash Account Name</label>
+<input type="text" id="staffEditGcashName" required placeholder="e.g. Maria Santos">
+</div>
+<div class="form-group">
+<label>GCash Number</label>
+<input type="text" id="staffEditGcashNumber" required placeholder="e.g. 09242330648">
+</div>
+<div class="form-group">
+<label>GCash QR Image</label>
+<input type="file" id="staffEditGcashQR" accept="image/*">
+<div style="margin-top: 0.5rem; text-align: center;">
+<img id="staffGcashQrPreview" alt="Store GCash QR preview" style="width: 120px; height: 120px; border: 1px solid #ddd; border-radius: 6px;">
+<br><small id="gcashQrStatus" style="color: #888; font-size: 0.75rem;"></small>
+</div>
+</div>
+<button type="submit" class="form-btn" style="background-color: #007dfe;">Save GCash Settings</button>
+</form>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+
+<!-- 3. LIVE ORDER STATUS BOARD & TRACKING/HISTORY -->
+<main id="tvView" class="view-section">
+<div class="tv-header">
+<h2>Live Order Status</h2>
+<p>Real-time tracking and history of your orders across all stages.</p>
+</div>
+
+<!-- DISPLAY CONTAINER — walang tabs; isang derecho na flow list -->
+<div class="tv-tab-content-card" style="background: #fff; border: 2px solid #f4a261; border-radius: 12px; padding: 2rem; max-width: 800px; margin: 0 auto; min-height: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); color: #333;">
+<div id="tvTabTitle" style="font-size: 1.2rem; font-weight: bold; color: #f4a261; text-align: center; margin-bottom: 1.5rem; text-transform: uppercase;">Live order flow</div>
+<div id="tvTabOrderDisplay" style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+</div>
+</div>
+</main>
+
+<!-- 3B. CUSTOMER ORDER TRACKER (online-order timeline) -->
+<main id="trackView" class="view-section">
+<div class="container" style="max-width: 800px;">
+<h2 class="section-title">Track My Order</h2>
+<div id="trackActiveList" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+<h3 style="margin: 1.5rem 0 0.8rem; color: var(--primary-color);">Order History</h3>
+<div id="trackHistoryList" style="display: flex; flex-direction: column; gap: 0.8rem;"></div>
+</div>
+</main>
+
+<!-- 4. ABOUT US SECTION / OUR STORY -->
+<main id="aboutView" class="view-section">
+<div class="container" style="max-width: 800px; padding: 3rem 1.5rem; text-align: center;">
+<h2 class="section-title" id="displayAboutTitle">Our Story</h2>
+<p id="displayAboutSubtitle" style="font-size: 1.1rem; color: var(--primary-color); font-weight: bold; margin-bottom: 1.5rem;">Baked by hand, since 2026</p>
+<div id="displayAboutContent" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); line-height: 1.8; color: #444; font-size: 1.05rem;">
+Crust & Crumbs started as a home kitchen on Dimasalang Street. Today, our small team still laminates every croissant by hand and bakes in batches so everything reaches you fresh.
+</div>
+<button class="btn" style="margin-top: 2rem;" onclick="switchView('customer')">Explore Our Menu</button>
+</div>
+</main>
+
+<!-- 5. CUSTOMER REVIEWS VIEW SECTION -->
+<!-- Feature 2: Admin Reply & Heart React sa Customer Reviews -->
+<main id="reviewsView" class="view-section">
+<div class="container" style="max-width: 900px;">
+<h2 class="section-title">Customer Reviews & Feedbacks</h2>
+
+<div id="allCustomerReviewsList" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+</div>
+</main>
+
+<!-- DARK BROWN FOOTER SECTION WITH CONTACT & SHOP DETAILS -->
+<footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-col brand-col">
+      <div class="brand-header">
+        <span class="croissant-icon">🥐</span>
+        <h3 class="footer-brand">Crust & Crumbs</h3>
+      </div>
+      <p class="footer-tagline">Handcrafted pastries baked fresh every morning in small batches.</p>
+    </div>
+    
+    <div class="footer-col">
+      <h4>CONTACT & SHOP INFO</h4>
+      <ul class="footer-info-list">
+        <li><span class="icon">📍</span> <span id="displayContactLocation">Metro Manila, Philippines</span></li>
+        <li><span class="icon">📞</span> <span id="displayContactPhone">+63 924 233 0648</span></li>
+        <li><span class="icon">✉️</span> <span id="displayContactEmail">support@crustandcrumbs.ph</span></li>
+        <li><span class="icon">🕒</span> <span id="displayContactHours">7:00 AM - 8:00 PM (Mon - Sun)</span></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<!-- CART DRAWER -->
+<div class="cart-drawer" id="cartDrawer">
+<div class="cart-header">
+<h3>Your Order</h3>
+</div>
+<div class="cart-items" id="cartItems"></div>
+<div class="cart-footer">
+<div class="cart-total">
+<span>Total:</span>
+<span id="cartTotal">0.00</span>
+</div>
+<button class="checkout-btn" onclick="checkout()">✅ Checkout</button>
+</div>
+</div>
+
+<!-- FLOATING CART BUTTON -->
+<button id="cartFab" hidden onclick="openCartDrawer()" title="Open cart">🛒<span id="cartFabBadge">0</span></button>
+
+
+<!-- SIGN IN MODAL -->
+<div class="custom-modal" id="signInModal">
+<div class="modal-header">
+<h3>Crust & Crumbs</h3>
+<button class="close-modal-btn" onclick="closeModal('signInModal')">&times;</button>
+</div>
+<form id="signInForm" style="margin-top: 1rem;" autocomplete="off">
+<div class="form-group">
+<label>Email Address</label>
+<input type="email" id="loginEmail" required placeholder="Enter your registered email" autocomplete="off">
+</div>
+<div class="form-group">
+<label>Password</label>
+<div class="password-input-wrapper">
+<input type="password" id="loginPassword" required placeholder="Enter password" autocomplete="new-password">
+<button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('loginPassword', this)" aria-label="Show password"><svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+</div>
+</div>
+<label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #555; margin: 0 0 0.2rem; cursor: pointer; user-select: none;">
+<input type="checkbox" id="loginRemember" checked style="width: 16px; height: 16px; accent-color: #d4a373; cursor: pointer;">
+<span>Remember me</span>
+</label>
+<button type="submit" class="form-btn" style="background-color: var(--primary-color); margin-top: 0.5rem;">Login</button>
+<p id="loginErrorText" hidden style="color: #e63946; font-size: 0.85rem; font-weight: bold; margin: 0.5rem 0 0; text-align: center;"></p>
+<div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.85rem;">
+<a href="#" style="color: #666;" onclick="handleResetPassword()">Reset Password</a>
+<a href="#" style="color: var(--primary-color); font-weight: bold;" onclick="switchToSignUp()">Sign Up / Create Account</a>
+</div>
+</form>
+</div>
+
+<!-- SIGN UP MODAL -->
+<div class="custom-modal" id="signUpModal" style="max-width: 520px;">
+<div class="modal-header">
+<h3>Create Account</h3>
+<button class="close-modal-btn" onclick="closeModal('signUpModal')">&times;</button>
+</div>
+<form id="signUpForm">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+<div class="form-group">
+<label>First Name</label>
+<input type="text" id="regFirstName" required placeholder="First name">
+</div>
+<div class="form-group">
+<label>Last Name</label>
+<input type="text" id="regLastName" required placeholder="Last name">
+</div>
+</div>
+<div class="form-group">
+<label>Cellphone Number</label>
+<input type="tel" id="regPhone" required placeholder="09123456789">
+</div>
+<div class="form-group">
+<label>Email Address</label>
+<div style="display: flex; gap: 0.5rem;">
+<input type="email" id="regEmail" required placeholder="name@example.com" oninput="checkEmailOTPState()">
+<button type="button" id="btnGetOTP" disabled class="form-btn" style="width: auto; white-space: nowrap; padding: 0.5rem 0.8rem; font-size: 0.8rem; background: #888;" onclick="handleGetOTP()">Get OTP</button>
+</div>
+</div>
+<div class="form-group" id="otpGroup" style="display: none; background: #eef4ff; padding: 0.8rem; border-radius: 8px; border: 1px solid #b6d4fe;">
+<label style="color: #0c5460;">Enter OTP Code Sent to Email</label>
+<div style="display: flex; gap: 0.5rem;">
+<input type="text" id="regOTPInput" placeholder="Enter 6-digit OTP code">
+<button type="button" class="form-btn" style="width: auto; padding: 0.5rem 0.8rem; font-size: 0.8rem; background: var(--primary-color);" onclick="verifyEnteredOTP()">Verify OTP</button>
+</div>
+<small id="otpStatusText" style="display: block; margin-top: 0.3rem; font-weight: bold; font-size: 0.75rem; color: #666;"></small>
+</div>
+<div class="form-group" style="margin-bottom: 0.3rem;">
+<label>Password</label>
+<div class="password-input-wrapper">
+<input type="password" id="regPassword" required placeholder="Create password" oninput="validateSignUpPassword()">
+<button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('regPassword', this)" aria-label="Show password"><svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+</div>
+</div>
+<div class="password-checklist">
+<div class="check-item" id="chk-lower"><span class="badge"></span> At least 1 lowercase</div>
+<div class="check-item" id="chk-upper"><span class="badge"></span> At least 1 uppercase</div>
+<div class="check-item" id="chk-num"><span class="badge"></span> At least 1 number</div>
+<div class="check-item" id="chk-special"><span class="badge"></span> At least 1 special char</div>
+<div class="check-item" id="chk-len"><span class="badge"></span> At least 8 characters</div>
+<div class="check-item" id="chk-space"><span class="badge"></span> No white space</div>
+</div>
+<div class="form-group">
+<label>Re-enter Password</label>
+<div class="password-input-wrapper">
+<input type="password" id="regConfirmPassword" required placeholder="Confirm password" oninput="updateConfirmMatchText()">
+<button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('regConfirmPassword', this)" aria-label="Show password"><svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+</div>
+<small id="confirmMatchText" hidden style="margin-top: 0.3rem; font-size: 0.8rem; font-weight: bold;"></small>
+</div>
+<div style="margin-bottom: 1rem; font-size: 0.8rem; line-height: 1.4;">
+<label style="display: flex; gap: 0.5rem; align-items: flex-start; cursor: pointer;">
+<input type="checkbox" id="regConsent" required style="margin-top: 0.2rem;">
+<span>I consent to receive promotional offers and marketing information from Crust & Crumbs. By clicking Confirm, you have accepted our <a href="#" style="color: var(--primary-color); font-weight: bold;" onclick="openModal('termsModal')">Terms & Conditions and Privacy Notice</a>.</span>
+</label>
+</div>
+<button type="submit" id="btnRegisterSubmit" disabled class="form-btn" style="background-color: #888; cursor: not-allowed;">Confirm & Register Account</button>
+</form>
+</div>
+
+<!-- TERMS & PRIVACY MODAL -->
+<div class="custom-modal" id="termsModal">
+<div class="modal-header">
+<h3>Terms & Privacy Notice</h3>
+<button class="close-modal-btn" onclick="closeModal('termsModal')">&times;</button>
+</div>
+<div style="font-size: 0.85rem; line-height: 1.6; color: #555;">
+<p><strong>Crust & Crumbs Pastry Shop Policies:</strong></p>
+<p>1. <strong>Data Collection:</strong> We collect personal details strictly for order processing and account administration.</p>
+<p>2. <strong>Order Pickup:</strong> Orders must be picked up within store operating hours (7:00 AM - 8:00 PM).</p>
+<p>3. <strong>Privacy Commitment:</strong> Your credentials and contact info are securely kept and will not be shared with third parties.</p>
+</div>
+<button class="form-btn" style="background-color: #888; margin-top: 1rem;" onclick="closeModal('termsModal')">Close</button>
+</div>
+
+<!-- USER ACCOUNT/PROFILE MODAL -->
+<!-- Feature 3: Customer Profile Info Display sa Header / Modal -->
+<div class="custom-modal" id="profileModal">
+<div class="modal-header">
+<h3>My Account Profile</h3>
+<button class="close-modal-btn" onclick="closeModal('profileModal')">&times;</button>
+</div>
+<form id="profileUpdateForm">
+<div class="form-group">
+<label>Full Name</label>
+<input type="text" id="profFullName" required>
+</div>
+<div class="form-group">
+<label>Cellphone Number</label>
+<input type="tel" id="profPhone" required>
+</div>
+<div class="form-group">
+<label>Email Address</label>
+<input type="email" id="profEmail" required>
+</div>
+
+<div class="form-group">
+<label>Default Delivery Address</label>
+<input type="text" id="profAddress" placeholder="Enter default delivery address">
+</div>
+<button type="submit" class="form-btn" style="background-color: var(--primary-color); margin-top: 0.5rem;">Save Changes</button>
+<button type="button" class="form-btn" style="background-color: #555; margin-top: 0.5rem;" onclick="handleChangeProfilePassword()">Change Password</button>
+</form>
+</div>
+
+<!-- USER PERSONAL ORDER HISTORY MODAL -->
+<!-- Feature 6: Inayos na Styling ng Customer Order History -->
+<div class="custom-modal" id="userOrderHistoryModal" style="max-width: 650px;">
+<div class="modal-header">
+<h3>My Order History</h3>
+<div style="display: flex; align-items: center; gap: 0.8rem;">
+<button class="icon-btn-header" onclick="openUserTrashModal()" title="View Trash">🗑</button>
+<button class="close-modal-btn" onclick="closeModal('userOrderHistoryModal')">&times;</button>
+</div>
+</div>
+<input type="text" id="userHistorySearchInput" class="history-search-box" placeholder="Search date, order ID, or items..." onkeyup="filterUserOrderHistory()" style="width: 100%; padding: 0.6rem; margin-bottom: 0.8rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.85rem;">
+<div style="overflow-x: auto; max-height: 50vh; overflow-y: auto;">
+<table class="data-table">
+<thead>
+<tr>
+<th>Order ID & Date</th>
+<th>Items</th>
+<th>Total</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="userHistoryTableBody"></tbody>
+</table>
+</div>
+<div style="margin-top: 1rem; text-align: right;">
+<button class="form-btn" onclick="closeModal('userOrderHistoryModal')" style="background-color: #888; width: auto; padding: 0.5rem 1.5rem;">Close</button>
+</div>
+</div>
+
+<!-- USER TRASH MODAL -->
+<div class="custom-modal" id="userTrashModal" style="max-width: 650px;">
+<div class="modal-header">
+<div style="display: flex; align-items: center; gap: 0.5rem;">
+<button class="icon-btn-header" onclick="backToUserOrderHistory()" title="Back to Order History">⬅</button>
+<h3 style="margin: 0;">My Trash Bin</h3>
+</div>
+<div style="display: flex; align-items: center; gap: 0.8rem;">
+<div class="dots-dropdown">
+<button class="icon-btn-header" onclick="toggleUserTrashDotsMenu()">⋮</button>
+<div id="userTrashDotsMenu" class="dots-dropdown-menu">
+<a href="#" onclick="emptyUserTrashDirectly()">Empty All</a>
+<a href="#" onclick="restoreAllUserTrash()">↩ Restore All to History</a>
+</div>
+</div>
+<button class="close-modal-btn" onclick="closeModal('userTrashModal')">&times;</button>
+</div>
+</div>
+<div class="trash-header-toolbar" style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+<span style="font-size: 0.85rem; color: #666;">Select items to restore or permanently remove.</span>
+<button id="userSelectModeBtn" class="select-toggle-btn" style="padding: 0.3rem 0.8rem; border-radius: 4px; border: 1px solid #ccc; cursor: pointer;" onclick="toggleUserSelectionMode()">Select</button>
+</div>
+<div style="overflow-x: auto; max-height: 50vh; overflow-y: auto;">
+<table class="data-table">
+<thead>
+<tr>
+<th id="userSelectColHeader" style="display: none; width: 44px; text-align: center;" title="Select all"><input type="checkbox" id="userTrashSelectAll" style="width:18px; height:18px; cursor:pointer; vertical-align:middle;" onchange="toggleAllUserTrashSelect(this)"></th>
+<th>Order ID & Date</th>
+<th>Items</th>
+<th>Total</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="userTrashTableBody"></tbody>
+</table>
+</div>
+<div id="userBulkActionBar" class="bulk-action-footer" style="display: none; margin-top: 1rem; gap: 0.5rem; justify-content: flex-end;">
+<button class="form-btn" onclick="restoreUserSelectedItems()" style="background-color: #2a9d8f; color: #fff; font-weight: bold; padding: 0.5rem 1rem; width: auto; border: none;">↩ Restore Selected</button>
+<button class="form-btn" onclick="deleteUserSelectedPermanently()" style="background-color: #fff; color: var(--accent-color); font-weight: bold; padding: 0.5rem 1rem; width: auto; border: 2px solid var(--accent-color);">Delete Selected</button>
+</div>
+<div style="margin-top: 1rem; text-align: right;">
+<button class="form-btn" onclick="closeModal('userTrashModal')" style="background-color: #888; width: auto; padding: 0.5rem 1.5rem;">Close</button>
+</div>
+</div>
+
+<!-- ITEM CUSTOMIZATION MODAL -->
+<div class="custom-modal" id="customizationModal">
+<div class="modal-header">
+<h3 id="customModalItemTitle">Customize Your Pastry</h3>
+<button class="close-modal-btn" onclick="closeModal('customizationModal')">&times;</button>
+</div>
+<div id="customModalBody">
+<div class="custom-section-title">1. Dedication Greeting (Cursive Font)</div>
+<div style="display: flex; gap: 0.8rem; margin-bottom: 0.5rem; font-size: 0.85rem;">
+<label><input type="radio" name="dedicationType" value="none" checked onclick="toggleDedicationTextarea()"> None</label>
+<label><input type="radio" name="dedicationType" value="plate" onclick="toggleDedicationTextarea()"> Plate Message (Free)</label>
+<label><input type="radio" name="dedicationType" value="card" onclick="toggleDedicationTextarea()"> Greeting Card (+P15.00)</label>
+</div>
+<div id="dedicationTextGroup" style="display: none;" class="form-group">
+<textarea id="dedicationMessage" class="cursive-font" rows="2" placeholder="Type message here..."></textarea>
+</div>
+<div class="custom-section-title">2. Toppings & Plating Add-ons</div>
+<div class="addon-group-row">
+<label><input type="checkbox" id="chkSyrup" onchange="toggleAddonSelect('chkSyrup', 'selSyrup')"> Extra Syrup / Drizzle</label>
+<select id="selSyrup" class="addon-select-box" disabled></select>
+</div>
+<div class="addon-group-row">
+<label><input type="checkbox" id="chkFruit" onchange="toggleAddonSelect('chkFruit', 'selFruit')"> Fresh Fruits Slices</label>
+<select id="selFruit" class="addon-select-box" disabled></select>
+</div>
+<div class="addon-group-row">
+<label><input type="checkbox" id="chkIceCream" onchange="toggleAddonSelect('chkIceCream', 'selIceCream')"> Ice Cream Scoop</label>
+<select id="selIceCream" class="addon-select-box" disabled></select>
+</div>
+<div class="addon-group-row">
+<label><input type="checkbox" id="chkNuts" onchange="toggleAddonSelect('chkNuts', 'selNuts')"> Crushed Nuts</label>
+<select id="selNuts" class="addon-select-box" disabled></select>
+</div>
+<div class="addon-group-row">
+<label><input type="checkbox" id="chkCrunch" onchange="toggleAddonSelect('chkCrunch', 'selCrunch')"> Crunchy Toppings</label>
+<select id="selCrunch" class="addon-select-box" disabled></select>
+</div>
+<div class="custom-section-title">3. Celebration Candles</div>
+<div style="background: #fdf8f3; padding: 0.6rem; border-radius: 6px; border: 1px solid #f0d0b0; margin-bottom: 0.6rem;">
+<label style="font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 0.3rem;">Classic Number Candle (+P15.00 ea)</label>
+<div style="display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.4rem;">
+<select id="candleNumVal" class="addon-select-box" style="width: 80px;">
+<option value="0">#0</option><option value="1">#1</option><option value="2">#2</option>
+<option value="3">#3</option><option value="4">#4</option><option value="5">#5</option>
+<option value="6">#6</option><option value="7">#7</option><option value="8">#8</option><option value="9">#9</option>
+</select>
+<button type="button" class="form-btn" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; background: var(--primary-color); width: auto;" onclick="addNumberCandleSelection()">+ Add Number Candle</button>
+</div>
+<div id="numberCandlesList"></div>
+</div>
+<div class="addon-group-row">
+<label>Spiral Candle (+P5.00 ea)</label>
+<div class="candle-qty-control">
+<button class="candle-qty-btn" onclick="changeCandleQty('spiralCandleQty', -1)">-</button>
+<span id="spiralCandleQty">0</span>
+<button class="candle-qty-btn" onclick="changeCandleQty('spiralCandleQty', 1)">+</button>
+</div>
+</div>
+<div class="addon-group-row">
+<label>Sparkler / Fountain Candle (+P30.00 ea)</label>
+<div class="candle-qty-control">
+<button class="candle-qty-btn" onclick="changeCandleQty('sparklerCandleQty', -1)">-</button>
+<span id="sparklerCandleQty">0</span>
+<button class="candle-qty-btn" onclick="changeCandleQty('sparklerCandleQty', 1)">+</button>
+</div>
+</div>
+<div class="custom-section-title">4. Allergies & Special Notes</div>
+<div class="form-group">
+<textarea id="allergyNotes" rows="2" placeholder="e.g., No nuts please..."></textarea>
+</div>
+<button type="button" class="form-btn" style="background-color: var(--primary-color); margin-top: 1rem;" onclick="confirmAddToCartCustomized()">Add Customized Item to Cart</button>
+</div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="custom-modal" id="checkoutModal">
+<div class="modal-header">
+<h3>🚚 Delivery Details</h3>
+<button class="close-modal-btn" onclick="closeModal('checkoutModal')">&times;</button>
+</div>
+<form id="checkoutDetailsForm">
+<div class="form-group">
+<label for="custName">Customer Name</label>
+<input type="text" id="custName" required placeholder="Enter customer name">
+</div>
+<input type="hidden" id="orderType" value="delivery">
+<div class="delivery-only-banner">🚚 <strong>Delivery Only</strong></div>
+<div id="deliveryFields">
+<div class="form-group">
+<label for="deliveryAddress">Delivery Address (House No. / Street / Barangay)</label>
+<input type="text" id="deliveryAddress" required placeholder="Enter complete house no., street, and barangay">
+</div>
+<div class="form-group">
+<label for="googleMapLink">Google Maps Pin Location Link (Optional)</label>
+<input type="url" id="googleMapLink" placeholder="https://maps.app.goo.gl/...">
+</div>
+</div>
+
+<div class="form-group">
+<label for="activeMobileNo">Active Mobile Number</label>
+<input type="tel" id="activeMobileNo" required readonly style="background-color: #f0f0f0; cursor: not-allowed;" placeholder="09123456789">
+</div>
+<div id="deliveryNotesGroup">
+<div class="form-group">
+<label for="riderNotes">Delivery Instructions / Notes for Rider</label>
+<textarea id="riderNotes" rows="2" placeholder="e.g. Leave at guard house, landmark is blue gate..."></textarea>
+</div>
+</div>
+<div class="form-group">
+<label for="paymentMethod">Payment Method</label>
+<select id="paymentMethod" onchange="togglePaymentFields()">
+<option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+<option value="GCash Online Payment">GCash Online Payment</option>
+</select>
+</div>
+<div id="gcashFields" style="display: none;">
+<div class="qr-box">
+<p style="font-weight: bold; margin-bottom: 0.5rem;">Scan GCash QR Code for Payment</p>
+<img id="gcashQRImg" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=GCash-CrustAndCrumbs-09242330648" alt="Store GCash QR" style="width: 130px; height: 130px;">
+<p style="font-size: 0.85rem; color: #333; margin-top: 0.4rem; font-weight: bold;">
+Account: <span id="gcashAccountText">JO***A MA**E Q.</span><br>
+Number: <span id="gcashNumberText">0924-233-0648</span>
+</p>
+</div>
+<div class="form-group">
+<label for="gcashRef">GCash Reference No.</label>
+<input type="text" id="gcashRef" placeholder="e.g. 100293847">
+</div>
+</div>
+<button type="submit" class="form-btn" style="background-color: var(--primary-color);">📦 Confirm & Place Delivery Order</button>
+</form>
+</div>
+
+<!-- DIGITAL RECEIPT & CLAIM STUB MODAL -->
+<div class="custom-modal" id="receiptModal">
+<div class="modal-header no-print">
+<h3 id="receiptModalTitle">Order Summary & Claim Stub</h3>
+</div>
+<div class="receipt-stub" id="receiptContent"></div>
+<div class="no-print" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+<button class="form-btn" onclick="window.print()" style="background-color: #333; flex: 1;">Print Ticket</button>
+<button class="form-btn" onclick="closeModal('receiptModal')" style="background-color: var(--primary-color); width: auto;">Close Window</button>
+</div>
+</div>
+
+<!-- END STORE DAY SUMMARY MODAL -->
+<div class="custom-modal" id="endDayModal">
+<div class="modal-header">
+<h3>End of Store Day Report</h3>
+<button class="close-modal-btn" onclick="closeModal('endDayModal')">&times;</button>
+</div>
+<div id="endDayReportContent" style="margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6;"></div>
+<div style="display: flex; gap: 1rem;">
+<button class="form-btn" onclick="closeDayAndClearOrders()" style="background-color: var(--accent-color);">Clear Orders & Close Day</button>
+<button class="form-btn" onclick="closeModal('endDayModal')" style="background-color: #888;">Close</button>
+</div>
+</div>
+
+<!-- ORDER HISTORY MODAL -->
+<div class="custom-modal" id="historyModal" style="max-width: 650px;">
+<div class="modal-header">
+<h3>Past Order History</h3>
+<div style="display: flex; align-items: center; gap: 0.8rem;">
+<button class="close-modal-btn" onclick="closeModal('historyModal')">&times;</button>
+</div>
+</div>
+<input type="text" id="historySearchInput" class="history-search-box" placeholder="Search date, order ID, items, or status..." onkeyup="filterOrderHistory()">
+<div class="trash-header-toolbar" style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+<button id="historySelectModeBtn" class="select-toggle-btn" style="padding: 0.3rem 0.8rem; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; margin-left: auto;" onclick="toggleHistorySelectionMode()">Select</button>
+</div>
+<div style="overflow-x: auto; max-height: 55vh; overflow-y: auto;">
+<table class="data-table">
+<thead>
+<tr>
+<th id="historySelectColHeader" style="display: none; width: 44px; text-align: center;" title="Select all"><input type="checkbox" id="historyTrashSelectAll" style="width:18px; height:18px; cursor:pointer; vertical-align:middle;" onchange="toggleAllHistorySelect(this)"></th>
+<th>Order ID & Date</th>
+<th>Items</th>
+<th>Total</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="historyTableBody"></tbody>
+</table>
+</div>
+<div id="historyBulkActionBar" class="bulk-action-footer" style="display: none; margin-top: 1rem; gap: 0.5rem; justify-content: flex-end;">
+<button class="form-btn" onclick="deleteSelectedHistory()" style="background-color: #fff; color: var(--accent-color); font-weight: bold; padding: 0.5rem 1rem; width: auto; border: 2px solid var(--accent-color);">Move Selected to Trash</button>
+</div>
+<div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+<button class="form-btn" onclick="openTrashModal()" style="background: none; border: none; color: #666; font-size: 0.85rem; width: auto; padding: 0.5rem 0.5rem; text-decoration: underline; cursor: pointer;" id="historyTrashCountBtn">View trash bin (0)</button>
+<button class="form-btn" onclick="closeModal('historyModal')" style="background-color: #888; width: auto; padding: 0.5rem 1.5rem;">Close</button>
+</div>
+</div>
+
+<!-- TRASH MODAL -->
+<div class="custom-modal" id="trashModal" style="max-width: 650px;">
+<div class="modal-header">
+<div style="display: flex; align-items: center; gap: 0.5rem;">
+<button class="icon-btn-header" onclick="backToOrderHistory()" title="Back to Order History">⬅</button>
+<h3 style="margin: 0;">Trash Bin (Deleted History)</h3>
+</div>
+<div style="display: flex; align-items: center; gap: 0.8rem;">
+<div class="dots-dropdown">
+<button class="icon-btn-header" onclick="toggleDotsDropdown()">⋮</button>
+<div id="trashDotsMenu" class="dots-dropdown-menu">
+<a href="#" onclick="emptyTrashDirectly()">Empty Trash (Delete All)</a>
+<a href="#" onclick="restoreAllTrash()">↩ Restore All to History</a>
+</div>
+</div>
+<button class="close-modal-btn" onclick="closeModal('trashModal')">&times;</button>
+</div>
+</div>
+<div class="trash-header-toolbar" style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+<span style="font-size: 0.85rem; color: #666;">Select items to restore or permanently remove.</span>
+<button id="selectModeBtn" class="select-toggle-btn" style="padding: 0.3rem 0.8rem; border-radius: 4px; border: 1px solid #ccc; cursor: pointer;" onclick="toggleSelectionMode()">Select</button>
+</div>
+<div style="overflow-x: auto; max-height: 50vh; overflow-y: auto;">
+<table class="data-table">
+<thead>
+<tr>
+<th id="selectColHeader" style="display: none; width: 44px; text-align: center;" title="Select all"><input type="checkbox" id="trashSelectAll" style="width:18px; height:18px; cursor:pointer; vertical-align:middle;" onchange="toggleAllTrashSelect(this)"></th>
+<th>Order ID & Date</th>
+<th>Items</th>
+<th>Total</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="trashTableBody"></tbody>
+</table>
+</div>
+<div id="bulkActionBar" class="bulk-action-footer" style="display: none; margin-top: 1rem; gap: 0.5rem; justify-content: flex-end;">
+<button class="form-btn" onclick="restoreSelectedItems()" style="background-color: #2a9d8f; color: #fff; font-weight: bold; padding: 0.5rem 1rem; width: auto; border: none;">↩ Restore Selected</button>
+<button class="form-btn" onclick="deleteSelectedPermanently()" style="background-color: #fff; color: var(--accent-color); font-weight: bold; padding: 0.5rem 1rem; width: auto; border: 2px solid var(--accent-color);">Delete Selected</button>
+</div>
+<div style="margin-top: 1rem; text-align: right;">
+<button class="form-btn" onclick="closeModal('trashModal')" style="background-color: #888; width: auto; padding: 0.5rem 1.5rem;">Close</button>
+</div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeAllDrawersAndModals()"></div>
+
+<!-- INDIVIDUAL ORDER PRODUCTS REVIEW MODAL / PAGE -->
+<div class="custom-modal" id="productReviewPageModal" style="max-width: 600px;">
+<div class="modal-header">
+<h3 id="reviewPageTitle">Review Order Products</h3>
+<button class="close-modal-btn" onclick="closeModal('productReviewPageModal')">&times;</button>
+</div>
+<div id="productReviewListContainer" style="max-height: 60vh; overflow-y: auto; padding: 0.5rem;"></div>
+<div style="margin-top: 1rem; text-align: right;">
+<button class="form-btn" onclick="saveProductReviews()" style="background-color: var(--primary-color);">Save Reviews</button>
+</div>
+</div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
